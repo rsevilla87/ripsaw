@@ -26,6 +26,12 @@
   register: resource_state
 
 - block:
+  - name: start kernel cache dropper
+    k8s:
+      src: "/opt/kernel_cache_dropper/kernel-cache-drop-daemonset.yaml"
+    when: workload_args.drop_cache_kernel is defined
+
+- block:
   - name: Provide path for fio - PV
     set_fact:
       fio_path: /mnt/pvc
@@ -93,11 +99,63 @@
       name: "{{ meta.name }}"
       namespace: "{{ operator_namespace }}"
       status:
-        state: StartingClient
+        state: WaitingForCacheDroppers
         complete: false
     when : "workload_args.servers|default('1')|int == (server_pods | json_query('resources[].status.podIP')|length) and workload_args.servers|default('1')|int == (server_pods | json_query('resources[].status[]')|selectattr('phase','match','Running')|list|length)"
 
   when: resource_state.resources[0].status.state == "StartingServers"
+
+- block:
+  - name: get kernel cache dropper pods
+    k8s_facts:
+      kind: Pod
+      label_selectors:
+        - name = kernel-cache-dropper
+      namespace: "{{ operator_namespace }}"
+    register: kcache_drop_pod_list
+
+  - name: put ip list into a var
+    set_fact:
+      iplst: |
+         {% for item in kcache_drop_pod_list.resources %}
+         {{ item.status.podIP }}
+         {% endfor %}
+
+  - name: delete old configmap
+    k8s:
+      kind: ConfigMap
+      name: kernel.cache.drop.pod.set
+      namespace: "{{ operator_namespace }}"
+      state: absent
+
+  - name: apply kcache_drop_pod_ip configmap
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: kernel.cache.drop.pod.set
+          namespace: "{{ operator_namespace }}"
+        data:
+          ips: "{{ iplst }}"
+
+  - name: show kernel cache dropper pods requested
+    when: kcache_drop_pod_list.resources | length > 0
+    shell: "echo {{ kcache_drop_pod_list.resources | length }}"
+    register: kcache_drop_pods_requested
+
+
+  - operator_sdk.util.k8s_status:
+      api_version: ripsaw.cloudbulldozer.io/v1alpha1
+      kind: Benchmark
+      name: "{{ meta.name }}"
+      namespace: "{{ operator_namespace }}"
+      status:
+        state: StartingClient
+        complete: false
+    when : "workload_args.drop_cache_kernel is not defined or kcache_drop_pod_list.resources | length == kcache_drop_pods_requested.stdout | int"
+  when: resource_state.resources[0].status.state == "WaitingForCacheDroppers"
 
 - block:
 
@@ -134,6 +192,17 @@
         data:
           hosts: |
             {{ fio_hosts }}
+
+  - name: fetch configmap info for kernel cache drop ips
+    k8s_info:
+      kind: ConfigMap
+      namespace: '{{ operator_namespace }}'
+      name: kernel.cache.drop.pod.set
+    register: fetched_kcache_pods
+
+  - name: set up kernel cache_drop ips
+    set_fact:
+      kcache_drop_pod_ips: "{{ fetched_kcache_pods.resources[0].data.ips }}"
 
   - name: Start FIO Client
     k8s:
