@@ -28,7 +28,7 @@
 - block:
   - name: start kernel cache dropper
     k8s:
-      src: "/opt/kernel_cache_dropper/kernel-cache-drop-daemonset.yaml"
+      definition: "{{ lookup('template', '/opt/kernel_cache_dropper/kernel-cache-drop-daemonset.yaml') | from_yaml }}"
     when: workload_args.drop_cache_kernel is defined
 
 - block:
