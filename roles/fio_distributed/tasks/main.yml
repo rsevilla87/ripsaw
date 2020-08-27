@@ -111,8 +111,6 @@
 
   when: (workload.args.kind | default('pod')) == "pod"
 
-
-
 - block :
 
   - name: Capture pod list
