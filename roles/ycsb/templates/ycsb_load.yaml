@@ -19,12 +19,6 @@ spec:
         env:
         - name: clustername
           value: "{{ clustername }}"
-        - name: es
-          value: "{{elasticsearch.server | default()}}"
-        - name: es_port
-          value: "{{elasticsearch.port | default()}}"
-        - name: es_index
-          value: "{{elasticsearch.index_name | default('ripsaw-ycsb')}}"
         - name: user
           value: "{{test_user | default()}}"
         - name: workload
@@ -35,6 +29,28 @@ spec:
           value: "{{workload_args.operationcount}}"
         - name: uuid
           value: "{{uuid}}"
+{% if elasticsearch is defined %}
+        - name: es
+          value: "{{ elasticsearch.server }}"
+        - name: es_port
+          value: "{{ elasticsearch.port }}"
+        - name: es_index
+          value: "{{ elasticsearch.index_name | default("ripsaw-ycsb") }}"
+        - name: parallel
+          value: "{{ elasticsearch.parallel | default("false") }}"
+{% endif %}
+{% if prometheus is defined %}
+        - name: prom_es
+          value: "{{ prometheus.server }}"
+        - name: prom_port
+          value: "{{ prometheus.port }}"
+        - name: prom_parallel
+          value: "{{ prometheus.parallel | default("false") }}"
+        - name: prom_token
+          value: "{{ prometheus.prom_token | default() }}"
+        - name: prom_url
+          value: "{{ prometheus.prom_url | default() }}"
+{% endif %}
         imagePullPolicy: Always
         command: ["/bin/sh", "-c"]
         args: ['run_snafu --tool ycsb -r 1 -l -d {{ workload_args.driver }} -u {{ uuid }} --user {{ test_user | default("ripsaw") }} -w {{ ycsb_workload_load }} -x "{{ workload_args.options_load }}"']
@@ -50,28 +66,4 @@ spec:
       - name: config-volume
         configMap:
           name: ycsb-test-{{ trunc_uuid }}
-{% if metadata is defined and metadata.collection|default(false) is sameas true and metadata.targeted|default(true) is sameas true %}
-      initContainers:
-      - name: backpack-{{ trunc_uuid }}
-        image: {{ metadata_image | default('quay.io/cloud-bulldozer/backpack:latest') }}
-        command: ["/bin/sh", "-c"]
-{% if metadata is defined and metadata.force|default(false) is sameas true %}
-        args: ["python3 stockpile-wrapper.py -s {{ elasticsearch.server }} -p {{ elasticsearch.port }} -u {{ uuid }} -n $my_node_name -N $my_pod_name --redisip {{ bo.resources[0].status.podIP }} --redisport 6379 --force"]
-{% else %}
-        args: ["python3 stockpile-wrapper.py -s {{ elasticsearch.server }} -p {{ elasticsearch.port }} -u {{ uuid }} -n $my_node_name -N $my_pod_name --redisip {{ bo.resources[0].status.podIP }} --redisport 6379"]
-{% endif %}
-        imagePullPolicy: Always
-        securityContext:
-          privileged: {{ metadata.privileged | default(false) | bool }}
-        env:
-          - name: my_node_name
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: my_pod_name
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-      serviceAccountName: {{ metadata.serviceaccount | default('benchmark-operator') }}
-{% endif %}
-  backoffLimit: 4
+{% include "metadata.yml.j2" %}
