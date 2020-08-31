@@ -49,6 +49,20 @@ spec:
             value: "{{ elasticsearch.port }}"
           - name: es_index
             value: "{{ elasticsearch.index_name | default("ripsaw-smallfile") }}"
+          - name: parallel
+            value: "{{ elasticsearch.parallel | default("false") }}"
+{% endif %}
+{% if prometheus is defined %}
+          - name: prom_es
+            value: "{{ prometheus.server }}"
+          - name: prom_port
+            value: "{{ prometheus.port }}"
+          - name: prom_parallel
+            value: "{{ prometheus.parallel | default("false") }}"
+          - name: prom_token
+            value: "{{ prometheus.prom_token | default() }}"
+          - name: prom_url
+            value: "{{ prometheus.prom_url | default() }}"
 {% endif %}
           - name: redis_host
             value: "{{ bo.resources[0].status.podIP }}"
@@ -98,27 +112,4 @@ spec:
 {% endif %}
       restartPolicy: Never
       serviceAccountName: benchmark-operator
-{% if metadata is defined and metadata.collection|default(false) is sameas true and metadata.targeted|default(true) is sameas true %}
-      initContainers:
-      - name: backpack-{{ trunc_uuid }}
-        image: {{ metadata_image | default('quay.io/cloud-bulldozer/backpack:latest') }}
-        command: ["/bin/sh", "-c"]
-{% if metadata is defined and metadata.force|default(false) is sameas true %}
-        args: ["python3 stockpile-wrapper.py -s {{ elasticsearch.server }} -p {{ elasticsearch.port }} -u {{ uuid }} -n $my_node_name -N $my_pod_name --redisip {{ bo.resources[0].status.podIP }} --redisport 6379 --force"]
-{% else %}
-        args: ["python3 stockpile-wrapper.py -s {{ elasticsearch.server }} -p {{ elasticsearch.port }} -u {{ uuid }} -n $my_node_name -N $my_pod_name --redisip {{ bo.resources[0].status.podIP }} --redisport 6379"]
-{% endif %}
-        imagePullPolicy: Always
-        securityContext:
-          privileged: {{ metadata.privileged | default(false) | bool }}
-        env:
-          - name: my_node_name
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: my_pod_name
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-      serviceAccountName: {{ metadata.serviceaccount | default('benchmark-operator') }}
-{% endif %}
+{% include "metadata.yml.j2" %}

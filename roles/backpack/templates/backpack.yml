@@ -35,18 +35,32 @@ spec:
 {% endif %}
       containers:
       - name: backpack
-        image: {{ metadata_image | default('quay.io/cloud-bulldozer/backpack:latest') }}
+        image: {{ metadata.image }}
         command: ["/bin/sh", "-c"]
-{% if metadata is defined and metadata.force|default(false) is sameas true %}
-        args: ["python3 stockpile-wrapper.py -s {{ elasticsearch.server }} -p {{ elasticsearch.port }} -u {{ uuid }} -n $my_node_name -N $my_pod_name --redisip {{ bo.resources[0].status.podIP }} --redisport 6379 --force && touch /tmp/indexed; sleep infinity"]
-{% else %}
-        args: ["python3 stockpile-wrapper.py -s {{ elasticsearch.server }} -p {{ elasticsearch.port }} -u {{ uuid }} -n $my_node_name -N $my_pod_name --redisip {{ bo.resources[0].status.podIP }} --redisport 6379 && touch /tmp/indexed; sleep infinity"]
+        args:
+          - >
+            python3
+            stockpile-wrapper.py
+            -s={{ elasticsearch.server }}
+            -p={{ elasticsearch.port }}
+            -u={{ uuid }}
+            -n=${my_node_name}
+            -N=${my_pod_name}
+            --redisip={{ bo.resources[0].status.podIP }}
+            --redisport=6379
+{% if metadata.force is sameas true %}
+            --force
 {% endif %}
+{% if metadata.stockpile_tags|length > 0 %}
+            --tags={{ metadata.stockpile_tags|join(",") }}
+{% endif %}
+{% if metadata.stockpile_skip_tags|length > 0 %}
+            --skip-tags={{ metadata.stockpile_skip_tags|join(",") }}
+{% endif %}
+            && touch /tmp/indexed; sleep infinity
         imagePullPolicy: Always
-{% if metadata is defined and metadata.privileged is defined %}
         securityContext:
-          privileged: {{ metadata.privileged | default(false) | bool }}
-{% endif %}
+          privileged: {{ metadata.privileged }}
         readinessProbe:
           exec:
             command:
@@ -64,7 +78,5 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-{% if metadata is defined and metadata.serviceaccount is defined %}
-      serviceAccountName: {{ metadata.serviceaccount | default('default') }}
-{% endif %}
+      serviceAccountName: {{ metadata.serviceaccount }}
       terminationGracePeriodSeconds: 30
