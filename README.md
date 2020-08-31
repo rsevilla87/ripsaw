@@ -68,6 +68,9 @@ spec:
 ## Cerberus Integration
 [Cerberus Integration](docs/cerberus.md)
 
+## Cache dropping
+[Cache dropping](docs/cache_dropping.md)
+
 ## Community
 Key Members(slack_usernames): aakarsh, dry923, rsevilla or rook
 * [**#sig-scalability on Kubernetes Slack**](https://kubernetes.slack.com)
