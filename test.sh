@@ -65,6 +65,9 @@ mkdir gold
 # Generate uuid
 UUID=$(uuidgen)
 
+#Tag name
+tag_name="${NODE_NAME:-master}"
+
 sed -i "s/ES_SERVER/$ES_SERVER/g" tests/test_crs/*
 sed -i "s/ES_PORT/$ES_PORT/g" tests/test_crs/*
 sed -i "s/sql-server/sql-server-$UUID/g" tests/mssql.yaml tests/test_crs/valid_hammerdb.yaml tests/test_hammerdb.sh
