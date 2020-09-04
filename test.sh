@@ -79,10 +79,6 @@ sed -i "s/kind: Benchmark/kind: Benchmark-$UUID/g" playbook.yml
 sed -i "s/kind: Benchmark/kind: Benchmark-$UUID/g" watches.yaml
 sed -i "s/backpack_role/backpack_role-$UUID/g" resources/backpack_role.yaml
 sed -i "s/my-ripsaw/my-ripsaw-$UUID-test-fiod/g" resources/kernel-cache-drop-daemonset.yaml
-grep -Rl "kind: Benchmark" roles/ | xargs sed -i "s/kind: Benchmark/kind: Benchmark-$UUID/g"
-
-# Update the operator image
-update_operator_image
 
 cp -pr * gold/
 
@@ -96,6 +92,9 @@ do
   sed -i "s/my-ripsaw/my-ripsaw-$UUID-$ci_dir/g" `grep -Rl my-ripsaw`
   cd ..
 done
+
+# Update the operator image
+update_operator_image
 
 # Run tests in parallel up to $max_concurrent at a time.
 parallel -n 1 -a tests/my_tests -P $max_concurrent ./run_test.sh 
