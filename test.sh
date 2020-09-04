@@ -65,6 +65,9 @@ mkdir gold
 # Generate uuid
 UUID=$(uuidgen)
 
+#Tag name
+tag_name="${NODE_NAME:-master}"
+
 sed -i "s/ES_SERVER/$ES_SERVER/g" tests/test_crs/*
 sed -i "s/ES_PORT/$ES_PORT/g" tests/test_crs/*
 sed -i "s/sql-server/sql-server-$UUID/g" tests/mssql.yaml tests/test_crs/valid_hammerdb.yaml tests/test_hammerdb.sh
@@ -79,9 +82,7 @@ sed -i "s/kind: Benchmark/kind: Benchmark-$UUID/g" playbook.yml
 sed -i "s/kind: Benchmark/kind: Benchmark-$UUID/g" watches.yaml
 sed -i "s/backpack_role/backpack_role-$UUID/g" resources/backpack_role.yaml
 grep -Rl "kind: Benchmark" roles/ | xargs sed -i "s/kind: Benchmark/kind: Benchmark-$UUID/g"
-
-# Update the operator image
-update_operator_image
+sed -i "s|          image: quay.io/benchmark-operator/benchmark-operator:master*|          image: $image_location/$image_account/benchmark-operator:$tag_name # |" resources/operator.yaml
 
 cp -pr * gold/
 
@@ -95,6 +96,9 @@ do
   sed -i "s/my-ripsaw/my-ripsaw-$UUID-$ci_dir/g" `grep -Rl my-ripsaw`
   cd ..
 done
+
+# Update the operator image
+update_operator_image
 
 # Run tests in parallel up to $max_concurrent at a time.
 parallel -n 1 -a tests/my_tests -P $max_concurrent ./run_test.sh 
