@@ -37,6 +37,7 @@ spec:
       # 'vm' needs kubevirt to be available
       # Default: pod
       kind: pod
+      runtime_class: class_name
       jobs:
         - write
         - read
@@ -99,7 +100,7 @@ The workload loops are nested as such from the CR options:
 ```
 +-------->numjobs---------+
 |                         |
-| +------>blocksize-----+ |
+| +------>bs|bsrange----+ |
 | |                     | |
 | | +---->job---------+ | |
 | | |                 | | |
@@ -161,6 +162,8 @@ The workload loops are nested as such from the CR options:
   > Note: Under most circumstances, a `write` job should be provided as the first list item for `jobs`. This will
   > ensure that subsequent jobs in the list can use the files created by the `write` job instead of needing
   > to instantiate the files themselves prior to beginning the benchmark workload.
+- **runtime_class** : If this is set, the benchmark-operator will apply the runtime_class to the podSpec runtimeClassName.
+  > Note: For Kata containers
 - **kind**: Can either be `pod` or `vm` to determine if the fio workload is run in a Pod or in a VM
   > Note: For VM workloads, you need to install Openshift Virtualization first
 - **vm_image**: Whether to use a pre-defined VM image with pre-installed requirements. Necessary for disconnected installs.
@@ -174,6 +177,16 @@ The workload loops are nested as such from the CR options:
   > Note: We set the `direct=1` fio option in the jobfile configmap. In order to avoid errors, the `bs` values
   > provided here should be a multiple of the filesystem blocksize (typically 4KiB). The [note above about units](#understanding-the-cr-options)
   > applies here.
+- **bsrange**:(list) blocksize range values to use for I/O transactions
+  > Note: We set the `direct=1` fio option in the jobfile configmap. In order to avoid errors, the `bsrange` values
+  > provided here should be a multiple of the filesystem blocksize (typically 1KiB - 4KiB). The [note above about units](#understanding-the-cr-options)
+  >  applies here.
+  ```
+  bsrange:
+    - 1KiB-4KiB
+    - 16KiB-64KiB
+    - 256KiB-4096KiB
+  ```
 - **numjobs**: (list) Number of clones of the job to run on each server -- Total jobs will be `numjobs * servers`
 - **iodepth**: Number of I/O units to keep in flight against a file; see `fio(1)`
 - **read_runtime**: Amount of time in seconds to run `read` workloads (including `readwrite` workloads)
