@@ -5,16 +5,16 @@ metadata:
   namespace: benchmark-operator
 spec:
   system_metrics:
-    collection: true
+    collection: false
     prom_url: https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091
-    es_url: ES_SERVER
-    prom_token: PROMETHEUS_TOKEN
+    es_url: ""
+    prom_token: ""
     metrics_profile: node-metrics.yml
   elasticsearch:
-    url: ES_SERVER
+    url: ""
     index_name: ripsaw-uperf
   metadata:
-    collection: true
+    collection: false
   cleanup: false
   workload:
     name: uperf
