@@ -64,3 +64,7 @@ spec:
        ports:
        - containerPort: 27017'
 }
+
+setup_file() {
+  basic_setup
+}

@@ -14,7 +14,7 @@ indexes=(ripsaw-pgbench-summary ripsaw-pgbench-raw)
   CR_NAME=$(get_benchmark_name ${CR})
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
-  check_benchmark 5m || die "Timeout waiting for benchmark/${CR_NAME} to complete"
+  check_benchmark 300 || die "Timeout waiting for benchmark/${CR_NAME} to complete"
   check_es
 }
 
@@ -62,4 +62,8 @@ spec:
             name: postgres-config'
 	kubectl rollout status -n ${NAMESPACE} deploy/postgres --timeout=60s
 	export POSTGRES_IP=$(kubectl get pod -n ${NAMESPACE} -l app=postgres -o jsonpath="{.items[*].status.podIP}")
+}
+
+setup_file() {
+  basic_setup
 }

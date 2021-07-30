@@ -17,3 +17,7 @@ ES_INDEX=ripsaw-stressng-results
   check_benchmark 5m || die "Timeout waiting for benchmark/${CR_NAME} to complete"
   check_es
 }
+
+setup_file() {
+  basic_setup
+}
