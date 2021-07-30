@@ -47,3 +47,7 @@ ES_INDEX=ripsaw-uperf-results
   check_benchmark 10m || die "Timeout waiting for benchmark/${CR_NAME} to complete"
   check_es
 }
+
+setup_file() {
+  basic_setup
+}
