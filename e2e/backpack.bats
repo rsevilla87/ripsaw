@@ -16,10 +16,7 @@ indexes=(cpu_vulnerabilities-metadata cpuinfo-metadata dmidecode-metadata k8s_no
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
+  check_es
 }
 
 @test "backpack-daemonset" {
@@ -28,10 +25,7 @@ indexes=(cpu_vulnerabilities-metadata cpuinfo-metadata dmidecode-metadata k8s_no
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-	check_es
-  done
+  check_es
 }
 
 setup() {

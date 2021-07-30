@@ -15,10 +15,7 @@ indexes=(ripsaw-fio-results ripsaw-fio-log ripsaw-fio-analyzed-result)
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
+  check_es
 }
 
 @test "fio-bsrange" {
@@ -27,10 +24,7 @@ indexes=(ripsaw-fio-results ripsaw-fio-log ripsaw-fio-analyzed-result)
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
+  check_es
 }
 
 @test "fio-hostpath" {
@@ -39,10 +33,7 @@ indexes=(ripsaw-fio-results ripsaw-fio-log ripsaw-fio-analyzed-result)
   envsubst < ${CR} | kubectl apply -f - 
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
+  check_es
 }
 
 @test "fio-ocs-cachedrop" {
@@ -59,12 +50,9 @@ indexes=(ripsaw-fio-results ripsaw-fio-log ripsaw-fio-analyzed-result)
       kubectl wait --for=condition=Initialized pods/rook-ceph-osd-cache-drop -n openshift-storage --timeout=100s
     fi
     sleep 5
-	envsubst < ${CR} | kubectl apply -f - 
+    envsubst < ${CR} | kubectl apply -f - 
     get_uuid ${CR_NAME}
     check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-    for index in ${indexes[@]}; do
-      ES_INDEX=${index}
-      check_es
-    done
+    check_es
   fi
 }

@@ -16,10 +16,6 @@ indexes=(ripsaw-fs-drift-results ripsaw-fs-drift-rsptimes ripsaw-fs-drift-rates-
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
   check_es
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
 }
 
 
@@ -29,8 +25,5 @@ indexes=(ripsaw-fs-drift-results ripsaw-fs-drift-rsptimes ripsaw-fs-drift-rates-
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
+  check_es
 }

@@ -7,39 +7,43 @@ DETIK_CLIENT_NAME="kubectl"
 DEBUG_DETIK="true"
 uuid=""
 suuid=""
+ARTIFACTS_DIR=artifacts
 
 
 setup_file() {
-   kubectl delete ns ${NAMESPACE} --ignore-not-found
-   debug "Deploying benchmark-operator"
-   make -C ../ deploy
-   kubectl rollout status deployment/benchmark-controller-manager
+  export PROMETHEUS_TOKEN=$(oc sa get-token -n openshift-monitoring prometheus-k8s)
+  export ES_SERVER=https://search-perfscale-dev-chmf5l4sh66lvxbnadi4bznl3a.us-west-2.es.amazonaws.com
+  kubectl delete ns ${NAMESPACE} --ignore-not-found
+  echo "Deploying benchmark-operator"
+  make -C ../ deploy
+  kubectl -n ${NAMESPACE} rollout status deployment/benchmark-controller-manager
 }
 
 teardown_file() {
-   debug "Tearing down benchmark-operator namespace"
-   make -C ../ undeploy
-   kubectl delete ns ${NAMESPACE} --ignore-not-found
-}
-
-setup(){
-   export PROMETHEUS_TOKEN=$(oc sa get-token -n openshift-monitoring prometheus-k8s)
-   export ES_SERVER=https://search-perfscale-dev-chmf5l4sh66lvxbnadi4bznl3a.us-west-2.es.amazonaws.com
+  echo "Tearing down benchmark-operator namespace"
+  make -C ../ undeploy
+  kubectl delete ns ${NAMESPACE} --ignore-not-found
 }
 
 teardown() {
-  debug "Deleting benchmark ${CR_NAME} from namespace ${NAMESPACE}"
   kubectl delete benchmark ${CR_NAME} -n ${NAMESPACE} --ignore-not-found
 }
 
 check_es() {
-  debug "Looking for documents with uuid: ${uuid} in index ${ES_INDEX}"
-  documents=$(curl -sS ${ES_SERVER}/${ES_INDEX}/_search?q=uuid.keyword:${uuid} | jq .hits.total.value)
-  echo "Documents found: ${documents}"
-  if [[ ${documents} -gt 0 ]]; then
-    return 0
+  if [[ -n ${indexes} ]]; then
+    for index in ${indexes[@]}; do
+      echo "Looking for documents with uuid: ${uuid} in index ${index}"
+      documents=$(curl -sS ${ES_SERVER}/${index}/_search?q=uuid.keyword:${uuid} | jq .hits.total.value)
+      if [[ ${documents} -le 0 ]]; then
+        die "${documents} documents found in index ${ES_INDEX}"
+      fi
+    done
   else
-    die "${documents} found in index ${ES_INDEX}"
+    echo "Looking for documents with uuid: ${uuid} in index ${ES_INDEX}"
+    documents=$(curl -sS ${ES_SERVER}/${ES_INDEX}/_search?q=uuid.keyword:${uuid} | jq .hits.total.value)
+    if [[ ${documents} -le 0 ]]; then
+      die "${documents} documents found in index ${ES_INDEX}"
+    fi
   fi
 }
 
@@ -68,9 +72,15 @@ check_benchmark() {
 }
 
 die() {
-  kubectl get benchmark ${CR_NAME} -o yaml -n ${NAMESPACE} --ignore-not-found
-  kubectl logs -l control-plane=controller-manager -c manager --tail=-1
   echo $1
+  mkdir -p ${ARTIFACTS_DIR}/${CR_NAME}
+  kubectl get benchmark ${CR_NAME} -o yaml -n ${NAMESPACE} --ignore-not-found > ${ARTIFACTS_DIR}/${CR_NAME}/${CR_NAME}.yaml
+  kubectl -n ${NAMESPACE} logs deployment/benchmark-controller-manager --tail=-1 -c manager > ${ARTIFACTS_DIR}/${CR_NAME}/benchmark-controller-manager.log
+  for pod in $(kubectl get pod -l benchmark-uuid=${uuid} -o custom-columns="name:.metadata.name" --no-headers); do
+    log_file=${ARTIFACTS_DIR}/${CR_NAME}/${pod}.log
+    echo "Saving log from pod ${pod} in ${log_file}"
+    kubectl -n ${NAMESPACE} logs --tail=-1 ${pod} > ${log_file}
+  done
   false
 }
 

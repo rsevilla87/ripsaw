@@ -15,10 +15,7 @@ indexes=(ripsaw-ycsb-summary ripsaw-ycsb-results)
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  for index in ${indexes[@]}; do
-    ES_INDEX=${index}
-    check_es
-  done
+  check_es
 }
 
 setup() {
