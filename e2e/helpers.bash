@@ -67,8 +67,13 @@ get_uuid() {
 }
 
 
+
 check_benchmark() {
-  try "at most 40 times every 30s to find 1 benchmarks named '${CR_NAME}' with '.status.complete' being 'true'"
+  timeout -k ${1} ${1} bash -c "
+  until [[ $(kubectl -n ${NAMESPACE} get benchmark/${CR_NAME} -o jsonpath={.status.complete}) == 'true' ]]; do
+    sleep 10
+  done
+  "
 }
 
 die() {

@@ -30,7 +30,7 @@ spec:
       samples: 2
       num_databases_pattern: 'all'
       databases:
-        - host:
+        - host: ${POSTGRES_IP}
           user: ci
           password: ci
           db_name: cidb

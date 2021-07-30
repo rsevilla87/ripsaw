@@ -1,7 +1,7 @@
 apiVersion: ripsaw.cloudbulldozer.io/v1alpha1
 kind: Benchmark
 metadata:
-  name: flent-resources-benchmark
+  name: flent-resources
   namespace: benchmark-operator
 spec:
   system_metrics:
