@@ -96,7 +96,7 @@
           namespace: "{{ operator_namespace }}"
           status:
             state: null
-            complete: false
+            complete: true
             metadata: "Complete"
       
       - name: Get benchmark state

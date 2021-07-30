@@ -6,38 +6,47 @@ load helpers.bash
 
 DETIK_CLIENT_NAMESPACE=benchmark-operator
 export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
-ES_INDEX=ripsaw-fio-results
+indexes=(ripsaw-fio-results ripsaw-fio-log ripsaw-fio-analyzed-result)
 
 
-@test "standard" {
-  CR=fio/valid_fio.yaml
+@test "fio-standard" {
+  CR=fio/fio.yaml
   CR_NAME=$(get_benchmark_name ${CR})
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  check_es
+  for index in ${indexes[@]}; do
+    ES_INDEX=${index}
+    check_es
+  done
 }
 
-@test "bsrange" {
-  CR=fio/valid_fio_bsrange.yaml
+@test "fio-bsrange" {
+  CR=fio/fio_bsrange.yaml
   CR_NAME=$(get_benchmark_name ${CR})
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  check_es 
+  for index in ${indexes[@]}; do
+    ES_INDEX=${index}
+    check_es
+  done
 }
 
-@test "hostpath" {
-  CR=fio/valid_fio_hostpath.yaml
+@test "fio-hostpath" {
+  CR=fio/fio_hostpath.yaml
   CR_NAME=$(get_benchmark_name ${CR})
   envsubst < ${CR} | kubectl apply -f - 
   get_uuid ${CR_NAME}
   check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  check_es
+  for index in ${indexes[@]}; do
+    ES_INDEX=${index}
+    check_es
+  done
 }
 
-@test "ocs-cachedrop" {
-  CR=fio/valid_fio_ocs_cache_drop.yaml
+@test "fio-ocs-cachedrop" {
+  CR=fio/fio_ocs_cache_drop.yaml
   CR_NAME=$(get_benchmark_name ${CR})
   openshift_storage_present=$(oc get namespace | awk '/openshift-storage/' | wc -l)
   if [ $openshift_storage_present -gt 0 ]; then
@@ -53,6 +62,9 @@ ES_INDEX=ripsaw-fio-results
 	envsubst < ${CR} | kubectl apply -f - 
     get_uuid ${CR_NAME}
     check_benchmark || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-    check_es
+    for index in ${indexes[@]}; do
+      ES_INDEX=${index}
+      check_es
+    done
   fi
 }

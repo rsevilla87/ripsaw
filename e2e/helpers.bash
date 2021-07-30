@@ -39,7 +39,7 @@ check_es() {
   if [[ ${documents} -gt 0 ]]; then
     return 0
   else
-    return 1
+    die "${documents} found in index ${ES_INDEX}"
   fi
 }
 
