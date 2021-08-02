@@ -27,11 +27,8 @@ spec:
         requests:
           cpu: 100m
           memory: 100Mi
-      hostnetwork: true
+      hostnetwork: false
       serviceip: false
-      pin: false
-      pin_server: "node-0"
-      pin_client: "node-1"
       multus:
         enabled: false
       samples: 1

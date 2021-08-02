@@ -31,3 +31,7 @@ setup_file() {
   basic_setup
   kubectl apply -f ../resources/backpack_role.yaml --overwrite
 }
+
+teardown_file(){
+  basic_teardown
+}

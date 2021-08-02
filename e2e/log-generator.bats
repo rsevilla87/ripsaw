@@ -9,8 +9,8 @@ export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
 ES_INDEX=log-generator-results
 
 
-@test "log_generator-standard" {
-  CR=log_generator/log_generator.yaml
+@test "log-generator-standard" {
+  CR=log-generator/log_generator.yaml
   CR_NAME=$(get_benchmark_name ${CR})
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
@@ -20,4 +20,8 @@ ES_INDEX=log-generator-results
 
 setup_file() {
   basic_setup
+}
+
+teardown_file(){
+  basic_teardown
 }

@@ -6,7 +6,6 @@ load helpers.bash
 
 DETIK_CLIENT_NAMESPACE=benchmark-operator
 export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
-ES_INDEX=ripsaw-iperf3-results
 
 
 @test "iperf3-standard" {
@@ -15,9 +14,12 @@ ES_INDEX=ripsaw-iperf3-results
   envsubst < ${CR} | kubectl apply -f -
   get_uuid ${CR_NAME}
   check_benchmark 300 || die "Timeout waiting for benchmark/${CR_NAME} to complete"
-  check_es
 }
 
 setup_file() {
   basic_setup
+}
+
+teardown_file(){
+  basic_teardown
 }

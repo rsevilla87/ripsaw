@@ -31,3 +31,7 @@ ES_INDEX=ripsaw-flent-results
 setup_file() {
   basic_setup
 }
+
+teardown_file(){
+  basic_teardown
+}

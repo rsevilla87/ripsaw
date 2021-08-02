@@ -18,7 +18,9 @@ indexes=(ripsaw-pgbench-summary ripsaw-pgbench-raw)
   check_es
 }
 
-setup() {
+
+setup_file() {
+  basic_setup
   kubectl apply -n ${NAMESPACE} -f - <<< '
 ---
 apiVersion: v1
@@ -60,10 +62,10 @@ spec:
         envFrom:
         - configMapRef:
             name: postgres-config'
-	kubectl rollout status -n ${NAMESPACE} deploy/postgres --timeout=60s
-	export POSTGRES_IP=$(kubectl get pod -n ${NAMESPACE} -l app=postgres -o jsonpath="{.items[*].status.podIP}")
+  kubectl rollout status -n ${NAMESPACE} deploy/postgres --timeout=60s
+  export POSTGRES_IP=$(kubectl get pod -n ${NAMESPACE} -l app=postgres -o jsonpath="{.items[*].status.podIP}")
 }
 
-setup_file() {
-  basic_setup
+teardown_file(){
+  basic_teardown
 }

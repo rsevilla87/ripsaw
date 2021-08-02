@@ -19,7 +19,7 @@ basic_setup() {
   kubectl -n ${NAMESPACE} rollout status deployment/benchmark-controller-manager
 }
 
-teardown_file() {
+basic_teardown() {
   echo "Tearing down benchmark-operator namespace"
   make -C ../ undeploy
   kubectl delete ns ${NAMESPACE} --ignore-not-found

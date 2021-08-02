@@ -23,24 +23,17 @@ spec:
       serviceip: false
       networkpolicy: true
       pin: false
-      pin_server: "node-0"
-      pin_client: "node-1"
       multus:
         enabled: false
-      samples: 2
+      samples: 1
       pair: 1
       test_types:
         - stream
-        - rr
-        - bidirec
       protos:
         - tcp
-        - udp
       sizes:
         - 1024
-        - 512
       nthrs:
         - 1
-        - 2
       runtime: 2
       debug: true

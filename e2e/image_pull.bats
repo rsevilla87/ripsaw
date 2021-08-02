@@ -6,7 +6,7 @@ load helpers.bash
 
 DETIK_CLIENT_NAMESPACE=benchmark-operator
 export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
-ES_INDEX=ripsaw-image_pull-results
+ES_INDEX=image-pull-results
 
 
 @test "image_pull-standard" {
@@ -20,4 +20,8 @@ ES_INDEX=ripsaw-image_pull-results
 
 setup_file() {
   basic_setup
+}
+
+teardown_file(){
+  basic_teardown
 }

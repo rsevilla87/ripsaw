@@ -23,19 +23,16 @@ spec:
       serviceip: true
       multus:
         enabled: false
-      samples: 2
+      samples: 1
       pair: 1
       test_types:
         - stream
-        - rr
       protos:
         - tcp
         - udp
       sizes:
-        - 1024
         - 512
       nthrs:
         - 1
-        - 2
       runtime: 2
       debug: true

@@ -20,3 +20,7 @@ export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
 setup_file() {
   basic_setup
 }
+
+teardown_file(){
+  basic_teardown
+}
