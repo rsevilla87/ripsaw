@@ -10,6 +10,7 @@ spec:
     metadata:
       labels:
         app: fio-benchmark-{{ trunc_uuid }}
+        benchmark-uuid: {{ uuid }}
     spec:
       affinity:
         podAntiAffinity:
