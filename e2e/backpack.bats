@@ -4,8 +4,7 @@
 
 load helpers.bash
 
-DETIK_CLIENT_NAMESPACE=benchmark-operator
-export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
+export NAMESPACE=benchmark-operator
 indexes=(cpu_vulnerabilities-metadata cpuinfo-metadata dmidecode-metadata k8s_nodes-metadata lspci-metadata meminfo-metadata sysctl-metadata ocp_network_operator-metadata ocp_install_config-metadata ocp_kube_apiserver-metadata ocp_dns-metadata ocp_kube_controllermanager-metadata)
 
 

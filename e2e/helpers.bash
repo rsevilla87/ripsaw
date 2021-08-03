@@ -1,8 +1,5 @@
 # vi: ft=bash
 
-load "lib/utils"
-load "lib/detik"
-
 DETIK_CLIENT_NAME="kubectl"
 DEBUG_DETIK="true"
 uuid=""
@@ -16,7 +13,7 @@ basic_setup() {
   kubectl delete ns ${NAMESPACE} --ignore-not-found
   echo "Deploying benchmark-operator"
   make -C ../ deploy
-  kubectl -n ${NAMESPACE} rollout status deployment/benchmark-controller-manager
+  kubectl_exec rollout status deployment/benchmark-controller-manager
 }
 
 basic_teardown() {
@@ -26,7 +23,7 @@ basic_teardown() {
 }
 
 teardown() {
-  kubectl delete benchmark ${CR_NAME} -n ${NAMESPACE} --ignore-not-found
+  kubectl_exec delete benchmark ${CR_NAME} --ignore-not-found
 }
 
 check_es() {
@@ -48,12 +45,12 @@ check_es() {
 }
 
 get_uuid() {
-  debug "Waiting for UUID from ${1}"
+  echo "Waiting for UUID from ${1}"
   local timeout=300
   while [[ ${timeout} -gt 0 ]]; do
-    uuid=$(kubectl get benchmarks -n ${NAMESPACE} ${1} -o jsonpath="{.status.uuid}")
+    uuid=$(kubectl_exec get benchmarks ${1} -o jsonpath="{.status.uuid}")
     if [[ -n ${uuid} ]]; then
-      suuid=$(kubectl get benchmarks -n ${NAMESPACE} ${1} -o jsonpath="{.status.suuid}")
+      suuid=$(kubectl_exec get benchmarks ${1} -o jsonpath="{.status.suuid}")
       break
     fi
     if [[ ${timeout} -lt 0 ]]; then
@@ -67,7 +64,7 @@ get_uuid() {
 check_benchmark() {
   local timeout=${1}
   while [[ ${timeout} -gt 0 ]]; do
-    if [[ $(kubectl get benchmark/${CR_NAME} -n ${NAMESPACE} -o jsonpath={.status.complete}) == 'true' ]]; then
+    if [[ $(kubectl_exec get benchmark/${CR_NAME} -o jsonpath={.status.complete}) == 'true' ]]; then
       break
     fi
     if [[ ${timeout} -lt 0 ]]; then
@@ -83,17 +80,21 @@ die() {
   local BENCHMARK_LOGS=${ARTIFACTS_DIR}/${CR_NAME}
   mkdir -p ${BENCHMARK_LOGS}
   echo "Dumping logs at ${BENCHMARK_LOGS}"
-  kubectl get benchmark ${CR_NAME} -o yaml -n ${NAMESPACE} --ignore-not-found > ${BENCHMARK_LOGS}/${CR_NAME}.yaml
-  kubectl -n ${NAMESPACE} logs deployment/benchmark-controller-manager --tail=-1 -c manager > ${BENCHMARK_LOGS}/benchmark-controller-manager.log
-  for pod in $(kubectl get pod -l benchmark-uuid=${uuid} -o custom-columns="name:.metadata.name" --no-headers); do
+  kubectl_exec get benchmark ${CR_NAME} -o yaml --ignore-not-found > ${BENCHMARK_LOGS}/${CR_NAME}.yaml
+  kubectl_exec logs deployment/benchmark-controller-manager --tail=-1 -c manager > ${BENCHMARK_LOGS}/benchmark-controller-manager.log
+  for pod in $(kubectl_exec get pod -l benchmark-uuid=${uuid} -o custom-columns="name:.metadata.name" --no-headers); do
     log_file=${BENCHMARK_LOGS}/${pod}.log
     echo "Saving log from pod ${pod} in ${log_file}"
-    kubectl -n ${NAMESPACE} logs --tail=-1 ${pod} > ${log_file}
+    kubectl_exec logs --tail=-1 ${pod} > ${log_file}
   done
   false
 }
 
-function get_benchmark_name() {
+get_benchmark_name() {
   benchmark_file=$1
   echo $(yq e '.metadata.name' $benchmark_file)
+}
+
+kubectl_exec() {
+  kubectl -n ${NAMESPACE} $@
 }

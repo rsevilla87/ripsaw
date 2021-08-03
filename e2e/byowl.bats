@@ -5,8 +5,7 @@
 
 load helpers.bash
 
-DETIK_CLIENT_NAMESPACE=benchmark-operator
-export NAMESPACE=${DETIK_CLIENT_NAMESPACE}
+export NAMESPACE=benchmark-operator
 
 
 @test "byowl" {
