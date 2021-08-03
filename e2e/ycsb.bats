@@ -18,7 +18,7 @@ indexes=(ripsaw-ycsb-summary ripsaw-ycsb-results)
 }
 
 setup() {
-  kubectl apply -n ${NAMESPACE} -f - <<< '
+  kubectl_exec apply -f - <<< '
 ---
 apiVersion: v1
 kind: Service
@@ -38,7 +38,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
  name: mongo
- namespace: benchmark-operator
 spec:
  selector:
    matchLabels:

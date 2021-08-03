@@ -1,12 +1,10 @@
 resources:
 - manager.yaml
 
-
 generatorOptions:
   disableNameSuffixHash: true
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-images:
-- name: controller
-  newName: quay.io/benchmark-operator/benchmark-operator
-  newTag: master
+
+configMapGenerator:
+- name: manager-config
+  files:
+  - controller_manager_config.yaml

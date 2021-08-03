@@ -61,8 +61,8 @@ spec:
         envFrom:
         - configMapRef:
             name: postgres-config'
-  kubectl rollout status -n ${NAMESPACE} deploy/postgres --timeout=60s
-  export POSTGRES_IP=$(kubectl get pod -n ${NAMESPACE} -l app=postgres -o jsonpath="{.items[*].status.podIP}")
+  kubectl_exec rollout status deploy/postgres --timeout=60s
+  export POSTGRES_IP=$(kubectl_exec get pod -l app=postgres -o jsonpath="{.items[*].status.podIP}")
 }
 
 teardown_file(){
