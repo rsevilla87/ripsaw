@@ -1,0 +1,17 @@
+name: Release benchmark-operator container images
+on:
+  pull_request_target:
+    paths:
+    - roles/flent/**
+
+jobs:
+  e2e-flent:
+    name: E2E flent
+    runs-on: ubuntu-latest
+    env:
+      QUAY_USER: ${{ secrets.QUAY_USER }}
+      QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+    steps:
+
+      - name: Login to container registry
+        run: podman login quay.io -u ${QUAY_USER} -p ${QUAY_TOKEN}
