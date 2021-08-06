@@ -1,17 +1,21 @@
 name: Release benchmark-operator container images
 on:
-  pull_request_target:
-    paths:
-    - roles/flent/**
-
+  push:
+    tags: "*"
+  workflow_dispatch:
+    inputs: 
+      test_list:
+        description: Space separated list of e2e tests to trigger
+        required: true
+        default: all
 jobs:
-  e2e-flent:
-    name: E2E flent
+  e2e:
+    name: E2E testing
     runs-on: ubuntu-latest
     env:
       QUAY_USER: ${{ secrets.QUAY_USER }}
       QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
     steps:
 
-      - name: Login to container registry
-        run: podman login quay.io -u ${QUAY_USER} -p ${QUAY_TOKEN}
+      - name: Print tests
+        run: echo ${{ github.event.inputs.test_list }}!
