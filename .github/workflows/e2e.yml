@@ -31,13 +31,16 @@ jobs:
       if: github.event_name != 'workflow_dispatch'
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
       if: github.event_name == 'pull_request_target'
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
       if: "github.event_name == 'workflow_dispatch' || github.event_name == 'push'"
 
     - name: Install bats
@@ -57,7 +60,7 @@ jobs:
         QUAY_TOKEN: ${{ secrets.QUAY_CI_TOKEN }}
 
     - name: Build, push and deploy benchmark-operator
-      run: make image-build image-push deploy
+      run: make deploy
 
     - name: Ensure benchmark-operator is running
       run: kubectl rollout status -n benchmark-operator --timeout=5m deploy/benchmark-controller-manager
