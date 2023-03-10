@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: 'log-generator-{{ trunc_uuid }}'
+  name: 'log-generator-{{ trunc_uuid }}-{{ query('community.general.random_string', upper=false, numbers=true, special=false, lenght=6) }}'
   namespace: '{{ operator_namespace }}'
 spec:
   parallelism: {{ workload_args.pod_count | default(1) | int }}
